@@ -79,7 +79,7 @@ function generateHandlerSummary(schools) {
     byHandler[key].push(s);
   });
 
-  const lines = [`Handler Summary — S.Y. ${APP_CONFIG.schoolYear}`, ''];
+  const lines = [`SS Summary (Solutions Specialist) — S.Y. ${APP_CONFIG.schoolYear}`, ''];
 
   Object.keys(byHandler)
     .sort()

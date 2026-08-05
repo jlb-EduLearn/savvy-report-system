@@ -54,8 +54,8 @@
     <section class="panel">
       <div class="panel-toolbar">
         <input type="search" id="search-input" class="input" placeholder="Search schools..." aria-label="Search schools">
-        <select id="filter-handler" class="select" aria-label="Filter by handler">
-          <option value="">All handlers</option>
+        <select id="filter-handler" class="select" aria-label="Filter by SS">
+          <option value="">All SS</option>
         </select>
         <select id="filter-status" class="select" aria-label="Filter by status">
           <option value="">All statuses</option>
@@ -74,7 +74,7 @@
           <thead>
             <tr>
               <th class="col-check"><input type="checkbox" id="select-all-checkbox" title="Select all"></th>
-              <th data-sort="ss" class="sortable">Handler</th>
+              <th data-sort="ss" class="sortable">SS</th>
               <th data-sort="name" class="sortable">Site</th>
               <th data-sort="link" class="sortable">Link</th>
               <th data-sort="accountCreation" class="sortable col-flag" title="Account creation">Accounts</th>
@@ -96,7 +96,7 @@
       <div class="panel-header">
         <h2>Report</h2>
         <div class="panel-actions">
-          <button class="btn-text" id="handler-summary-btn">By handler</button>
+          <button class="btn-text" id="handler-summary-btn">By SS</button>
           <button class="btn-text" id="download-report-btn">Download</button>
           <button class="btn-text" id="copy-btn">Copy</button>
         </div>
@@ -119,7 +119,7 @@
         <input type="hidden" id="school-id">
         <div class="form-row">
           <div class="field">
-            <label for="school-ss">Handler</label>
+            <label for="school-ss">SS <span class="field-hint">(Solutions Specialist)</span></label>
             <input type="text" id="school-ss" class="input" required>
           </div>
           <div class="field">

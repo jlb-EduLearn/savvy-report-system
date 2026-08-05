@@ -129,7 +129,7 @@ function sortSchools(schools, key, direction) {
 /** Export schools to CSV string */
 function schoolsToCSV(schools) {
   const headers = [
-    'Handler',
+    'SS',
     'Site Name',
     'Link',
     'Status',
@@ -204,7 +204,7 @@ function parseCSVRow(line) {
 }
 
 const CSV_COLUMN_ALIASES = {
-  ss: ['handler', 'site specialist', 'ss'],
+  ss: ['ss', 'solutions specialist', 'solution specialist', 'handler', 'site specialist'],
   name: ['site name', 'school name', 'name', 'site'],
   link: ['link', 'url', 'site link'],
   status: ['status', 'deploy', 'deployment status', 'deploy status'],
@@ -239,7 +239,7 @@ function buildCSVColumnMap(headers) {
 
 function looksLikeCSVHeader(cols) {
   const joined = cols.join(' ').toLowerCase();
-  return /handler|school name|site name|status|link/.test(joined);
+  return /ss|solutions specialist|handler|school name|site name|status|link/.test(joined);
 }
 
 /** Map row columns to school fields by index (Status in column D when no Programs). */

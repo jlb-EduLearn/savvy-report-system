@@ -91,7 +91,7 @@ function populateHandlerFilter(schools, selectedHandler) {
 
   const handlers = getUniqueHandlers(schools);
   select.innerHTML =
-    '<option value="">All Handlers</option>' +
+    '<option value="">All SS</option>' +
     handlers.map((h) => `<option value="${sanitizeHTML(h)}">${sanitizeHTML(h)}</option>`).join('');
 
   if (selectedHandler) select.value = selectedHandler;

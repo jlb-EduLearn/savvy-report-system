@@ -244,7 +244,7 @@ async function handleResetData() {
 function handleHandlerSummary() {
   const summary = generateHandlerSummary(currentSchoolData);
   displayReport(summary);
-  showToast('Handler summary loaded into report panel', 'info');
+  showToast('SS summary loaded into report panel', 'info');
 }
 
 function initApp() {
