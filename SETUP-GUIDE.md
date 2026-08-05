@@ -283,4 +283,46 @@ This setup uses Supabase **anon** key in the browser (standard for small team to
 
 ---
 
-*School Year 2026–2027 · SAVVY Deployment Monitor*
+## Auto-update live site (push → online in ~1 min)
+
+Once Vercel is connected to GitHub, **every push to `main` automatically redeploys** your live site.
+
+### One-command deploy (Windows)
+
+After you change code locally, run in PowerShell:
+
+```powershell
+cd "C:\Users\Jeffrey Batucan\Documents\2026\SAVVY REPORT SYSTEM"
+.\scripts\deploy.ps1 "Describe your change"
+```
+
+Example:
+```powershell
+.\scripts\deploy.ps1 "Added enrollment filter"
+```
+
+This will: `git add` → `commit` → `push` → Vercel rebuilds automatically.
+
+### Manual deploy
+
+```powershell
+git add .
+git commit -m "Your message"
+git push origin main
+```
+
+### Verify Vercel auto-deploy is on
+
+1. [vercel.com/dashboard](https://vercel.com/dashboard) → your project
+2. **Settings → Git** → Production Branch = **`main`**
+3. After each push, open **Deployments** — new build should appear in ~1–2 minutes
+
+### Workflow summary
+
+```
+Edit code locally → run deploy.ps1 → GitHub updates → Vercel rebuilds → test live URL
+```
+
+> **Note:** School data edits in the app save to **Supabase**, not GitHub. Only **code changes** need `git push`.
+
+---
