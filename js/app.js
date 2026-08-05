@@ -120,8 +120,7 @@ async function handleTableClick(e) {
 
     currentSchoolData = deleteSchool(currentSchoolData, id);
     refreshDashboard({ resetCheckboxes: true });
-    await pushLocalToCloud(currentSchoolData);
-    showToast(`Deleted ${school.name}`, 'success');
+    await syncAfterChange(`Deleted ${school.name} and synced to cloud`);
   }
 }
 
@@ -139,6 +138,23 @@ function handleCheckboxChange(e) {
   }
 }
 
+async function applyRemoteSchools(schools, updatedAt) {
+  const localJson = JSON.stringify(currentSchoolData);
+  const remoteJson = JSON.stringify(schools);
+  if (localJson === remoteJson) return;
+
+  currentSchoolData = schools;
+  saveSchoolsToStorage(schools);
+  refreshDashboard();
+  updateLastSavedLabel(updatedAt);
+}
+
+async function syncAfterChange(message) {
+  const ok = await persistSchools(currentSchoolData);
+  showToast(ok ? message : 'Saved locally — cloud sync failed', ok ? 'success' : 'error');
+  return ok;
+}
+
 async function handleFormSubmit(e) {
   e.preventDefault();
   const formData = readSchoolFormData();
@@ -146,19 +162,18 @@ async function handleFormSubmit(e) {
 
   if (idValue) {
     currentSchoolData = updateSchool(currentSchoolData, parseInt(idValue, 10), formData);
-    showToast('School updated', 'success');
   } else {
     currentSchoolData = createSchool(currentSchoolData, formData);
-    showToast('School added', 'success');
   }
 
   closeSchoolModal();
   refreshDashboard({ resetCheckboxes: true });
-  await pushLocalToCloud(currentSchoolData);
+  await syncAfterChange(idValue ? 'Updated and synced to cloud' : 'Added and synced to cloud');
 }
 
 async function handleSyncCloud() {
-  await pushLocalToCloud(currentSchoolData);
+  const ok = await persistSchools(currentSchoolData);
+  showToast(ok ? 'Synced to cloud' : 'Cloud sync failed', ok ? 'success' : 'error');
 }
 
 function handleCopyReport() {
@@ -190,7 +205,7 @@ function handleImportCSV(e) {
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = (event) => {
+  reader.onload = async (event) => {
     try {
       const rows = parseCSV(event.target.result);
       if (!rows.length) {
@@ -206,8 +221,7 @@ function handleImportCSV(e) {
 
       currentSchoolData = importSchoolsFromCSV(currentSchoolData, rows, mode);
       refreshDashboard({ resetCheckboxes: true });
-      pushLocalToCloud(currentSchoolData);
-      showToast(`Imported ${rows.length} school(s)`, 'success');
+      await syncAfterChange(`Imported ${rows.length} school(s) and synced to cloud`);
     } catch {
       showToast('Failed to parse CSV file', 'error');
     }
@@ -216,7 +230,7 @@ function handleImportCSV(e) {
   reader.readAsText(file);
 }
 
-function handleResetData() {
+async function handleResetData() {
   const confirmed = confirm(
     'Clear all schools and reset to blank? Cloud data will be cleared too.'
   );
@@ -224,8 +238,7 @@ function handleResetData() {
 
   currentSchoolData = resetToSeedData();
   refreshDashboard({ resetCheckboxes: true });
-  if (isCloudEnabled()) pushLocalToCloud(currentSchoolData);
-  showToast('Reset to blank', 'info');
+  await syncAfterChange('Reset to blank and synced to cloud');
 }
 
 function handleHandlerSummary() {
@@ -263,7 +276,9 @@ function initApp() {
     if (e.key === 'Escape') closeSchoolModal();
   });
 
-  loadAndRenderData();
+  loadAndRenderData().then(() => {
+    startAutoCloudSync(applyRemoteSchools);
+  });
 }
 
 document.addEventListener('DOMContentLoaded', initApp);

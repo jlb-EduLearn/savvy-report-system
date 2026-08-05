@@ -17,11 +17,8 @@ function emptySchoolList() {
 }
 
 /** @param {import('./types').School[]} schools */
-function saveSchoolsToStorage(schools, options = {}) {
+function saveSchoolsToStorage(schools) {
   localStorage.setItem(APP_CONFIG.storageKey, JSON.stringify(schools));
-  if (!options.skipCloud && typeof scheduleCloudSave === 'function') {
-    scheduleCloudSave(schools);
-  }
 }
 
 function getNextSchoolId(schools) {
