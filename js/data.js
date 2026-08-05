@@ -12,6 +12,10 @@ function loadSchoolsFromStorage() {
   }
 }
 
+function emptySchoolList() {
+  return [];
+}
+
 /** @param {import('./types').School[]} schools */
 function saveSchoolsToStorage(schools, options = {}) {
   localStorage.setItem(APP_CONFIG.storageKey, JSON.stringify(schools));

@@ -105,17 +105,20 @@ async function loadSchoolsWithCloud() {
   try {
     const cloudSchools = await fetchCloudSchools();
 
-    if (Array.isArray(cloudSchools) && cloudSchools.length > 0) {
+    // Cloud has data (including intentional empty list)
+    if (Array.isArray(cloudSchools)) {
       const consolidated = consolidateSchools(cloudSchools);
       saveSchoolsToStorage(consolidated, { skipCloud: true });
       setSyncStatus('synced');
       return consolidated;
     }
 
-    const local = loadSchoolsFromStorage();
-    await upsertCloudSchools(local);
+    // No cloud row yet — start blank, do not load seed data
+    const empty = emptySchoolList();
+    saveSchoolsToStorage(empty, { skipCloud: true });
+    await upsertCloudSchools(empty);
     setSyncStatus('synced');
-    return local;
+    return empty;
   } catch {
     setSyncStatus('error');
     showToast('Cloud unavailable — showing local data', 'error');

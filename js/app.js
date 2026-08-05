@@ -211,14 +211,14 @@ function handleImportCSV(e) {
 
 function handleResetData() {
   const confirmed = confirm(
-    'Reset all schools to default sample data? Your current data will be replaced.'
+    'Clear all schools and reset to blank? Cloud data will be cleared too.'
   );
   if (!confirmed) return;
 
   currentSchoolData = resetToSeedData();
   refreshDashboard({ resetCheckboxes: true });
   if (isCloudEnabled()) pushLocalToCloud(currentSchoolData);
-  showToast('Reset to sample data', 'info');
+  showToast('Reset to blank', 'info');
 }
 
 function handleHandlerSummary() {
