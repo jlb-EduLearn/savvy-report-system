@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>SAVVY Deployment Monitor</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -64,7 +64,10 @@
           <option value="Undeployed">Undeployed</option>
         </select>
       </div>
-      <p class="table-legend">Green dot = complete · Gray dot = not yet done · Auto-syncs every 8 seconds</p>
+      <p class="table-legend">
+        <span class="legend-desktop">Green dot = complete · Gray dot = not yet done · Auto-syncs every 8 seconds</span>
+        <span class="legend-mobile">Green = done · Gray = pending · Swipe table sideways · Auto-sync every 8s</span>
+      </p>
 
       <div class="table-wrap">
         <table>
