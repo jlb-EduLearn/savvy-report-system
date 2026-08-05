@@ -132,8 +132,8 @@ function schoolsToCSV(schools) {
     'Handler',
     'Site Name',
     'Link',
-    'Programs',
     'Status',
+    'Programs',
     'Account Creation',
     'Teachers Uploaded',
     'Students Uploaded',
@@ -144,8 +144,8 @@ function schoolsToCSV(schools) {
       csvEscape(s.ss),
       csvEscape(s.name),
       csvEscape(s.link),
-      csvEscape(s.programs || ''),
       csvEscape(s.status),
+      csvEscape(s.programs || ''),
       s.accountCreation ? 'Yes' : 'No',
       s.teachers ? 'Yes' : 'No',
       s.students ? 'Yes' : 'No',
@@ -161,55 +161,154 @@ function csvEscape(value) {
   return str;
 }
 
+function csvYesNo(value) {
+  return /^(yes|true|1|✔|y)$/i.test(String(value ?? '').trim());
+}
+
+/** Normalize deploy status from CSV or manual entry (case-insensitive). */
+function normalizeStatus(value) {
+  const v = String(value ?? '').trim().toLowerCase();
+  if (!v) return 'Undeployed';
+  if (v === 'deployed' || v === 'yes') return 'Deployed';
+  if (v === 'in progress' || v === 'in-progress' || v === 'inprogress') return 'In Progress';
+  if (v === 'undeployed' || v === 'no') return 'Undeployed';
+  return String(value).trim();
+}
+
+function parseCSVRow(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else if (ch === '"') {
+        inQuotes = false;
+      } else {
+        current += ch;
+      }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ',') {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+const CSV_COLUMN_ALIASES = {
+  ss: ['handler', 'site specialist', 'ss'],
+  name: ['site name', 'school name', 'name', 'site'],
+  link: ['link', 'url', 'site link'],
+  status: ['status', 'deploy', 'deployment status', 'deploy status'],
+  programs: ['programs', 'program'],
+  accountCreation: ['account creation', 'accounts', 'account'],
+  teachers: ['teachers uploaded', 'teachers'],
+  students: ['students uploaded', 'students'],
+  enrollment: ['enrollment module', 'enrollment'],
+};
+
+function buildCSVColumnMap(headers) {
+  const map = {};
+  let matched = 0;
+
+  headers.forEach((header, index) => {
+    const h = header.toLowerCase().replace(/\s+/g, ' ').trim();
+    if (!h) return;
+
+    for (const [field, aliases] of Object.entries(CSV_COLUMN_ALIASES)) {
+      if (map[field] !== undefined) continue;
+      if (aliases.some((alias) => h === alias || h.includes(alias))) {
+        map[field] = index;
+        matched++;
+        break;
+      }
+    }
+  });
+
+  if (map.name === undefined || matched < 2) return null;
+  return map;
+}
+
+function looksLikeCSVHeader(cols) {
+  const joined = cols.join(' ').toLowerCase();
+  return /handler|school name|site name|status|link/.test(joined);
+}
+
+/** Map row columns to school fields by index (Status in column D when no Programs). */
+function rowFromColumns(cols, columnMap) {
+  const pick = (field, fallbackIndex) => {
+    const index = columnMap?.[field] ?? fallbackIndex;
+    return index !== undefined && index < cols.length ? cols[index] : '';
+  };
+
+  const isStatusValue = (v) =>
+    /^(deployed|undeployed|in progress|in-progress|inprogress|yes|no)$/i.test(String(v ?? '').trim());
+
+  let statusIndex = columnMap?.status;
+  let programsIndex = columnMap?.programs;
+
+  if (statusIndex === undefined) {
+    if (cols[3] !== undefined && isStatusValue(cols[3])) {
+      statusIndex = 3;
+      programsIndex = cols[4] !== undefined && !isStatusValue(cols[4]) ? 4 : undefined;
+    } else if (cols[4] !== undefined && isStatusValue(cols[4])) {
+      statusIndex = 4;
+      programsIndex = 3;
+    } else {
+      statusIndex = 3;
+    }
+  }
+
+  if (programsIndex === undefined && columnMap?.programs === undefined && statusIndex === 3 && cols.length >= 9) {
+    programsIndex = 4;
+  }
+
+  let accountIndex = columnMap?.accountCreation;
+  let teachersIndex = columnMap?.teachers;
+  let studentsIndex = columnMap?.students;
+  let enrollmentIndex = columnMap?.enrollment;
+
+  if (accountIndex === undefined) {
+    const afterFlags = programsIndex !== undefined ? programsIndex + 1 : statusIndex + 1;
+    accountIndex = afterFlags;
+    teachersIndex = afterFlags + 1;
+    studentsIndex = afterFlags + 2;
+    enrollmentIndex = afterFlags + 3;
+  }
+
+  return {
+    ss: pick('ss', 0),
+    name: pick('name', 1),
+    link: pick('link', 2),
+    status: normalizeStatus(pick('status', statusIndex)),
+    programs: programsIndex !== undefined ? pick('programs', programsIndex) : '',
+    accountCreation: csvYesNo(pick('accountCreation', accountIndex)),
+    teachers: csvYesNo(pick('teachers', teachersIndex)),
+    students: csvYesNo(pick('students', studentsIndex)),
+    enrollment: csvYesNo(pick('enrollment', enrollmentIndex)),
+  };
+}
+
 /** Parse CSV text into school objects (without ids — assigned on import) */
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
 
-  const parseRow = (line) => {
-    const result = [];
-    let current = '';
-    let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (inQuotes) {
-        if (ch === '"' && line[i + 1] === '"') {
-          current += '"';
-          i++;
-        } else if (ch === '"') {
-          inQuotes = false;
-        } else {
-          current += ch;
-        }
-      } else if (ch === '"') {
-        inQuotes = true;
-      } else if (ch === ',') {
-        result.push(current.trim());
-        current = '';
-      } else {
-        current += ch;
-      }
-    }
-    result.push(current.trim());
-    return result;
-  };
+  const headerCols = parseCSVRow(lines[0]);
+  const columnMap = looksLikeCSVHeader(headerCols) ? buildCSVColumnMap(headerCols) : null;
+  const dataLines = columnMap ? lines.slice(1) : lines.slice(1);
 
-  const yesNo = (v) => /^(yes|true|1|✔|y)$/i.test(String(v).trim());
-
-  return lines.slice(1).map((line) => {
-    const cols = parseRow(line);
-    return {
-      ss: cols[0] || '',
-      name: cols[1] || '',
-      link: cols[2] || '',
-      programs: cols[3] || '',
-      status: cols[4] || 'Undeployed',
-      accountCreation: yesNo(cols[5]),
-      teachers: yesNo(cols[6]),
-      students: yesNo(cols[7]),
-      enrollment: yesNo(cols[8]),
-    };
-  }).filter((s) => s.name);
+  return dataLines
+    .map((line) => rowFromColumns(parseCSVRow(line), columnMap))
+    .filter((s) => s.name);
 }
 
 /** Replace or append schools from imported CSV rows */
@@ -220,7 +319,7 @@ function importSchoolsFromCSV(schools, rows, mode = 'replace') {
     name: row.name || '',
     link: row.link || '',
     programs: row.programs || '',
-    status: row.status || 'Undeployed',
+    status: normalizeStatus(row.status || 'Undeployed'),
     accountCreation: Boolean(row.accountCreation),
     teachers: Boolean(row.teachers),
     students: Boolean(row.students),
