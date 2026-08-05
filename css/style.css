@@ -280,7 +280,7 @@ tbody tr:hover { background: #f1f5f9; }
 }
 
 .flag-yes { background: var(--success); }
-.flag-no { background: #cbd5e1; }
+.flag-no { background: var(--danger); }
 
 .badge {
   display: inline-block;

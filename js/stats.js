@@ -31,11 +31,11 @@ function calculateStats(schools) {
   };
 }
 
-function getStatusBadgeClass(status) {
-  const normalized = (status || '').toLowerCase();
-  if (normalized === 'deployed') return 'badge-success';
-  if (normalized === 'in progress') return 'badge-warning';
-  return 'badge-danger';
+function renderDeployStatusCell(status) {
+  const isDeployed = (status || '').toLowerCase() === 'deployed';
+  const cls = isDeployed ? 'badge-success' : 'badge-danger';
+  const label = isDeployed ? 'Yes' : 'No';
+  return `<span class="badge ${cls}">${label}</span>`;
 }
 
 function getUploadSummary(school) {

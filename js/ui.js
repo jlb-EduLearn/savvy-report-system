@@ -64,7 +64,7 @@ function renderTable(schools, sortState) {
           <td class="col-flag">${renderFlagCell(s.teachers, 'Teachers')}</td>
           <td class="col-flag">${renderFlagCell(s.students, 'Students')}</td>
           <td class="col-flag">${renderFlagCell(s.enrollment, 'Enrollment')}</td>
-          <td><span class="badge ${getStatusBadgeClass(s.status)}">${sanitizeHTML(s.status)}</span></td>
+          <td>${renderDeployStatusCell(s.status)}</td>
           <td class="col-actions action-cell">
             <button class="action-btn edit-btn" data-id="${s.id}">Edit</button>
             <button class="action-btn delete-btn" data-id="${s.id}">Delete</button>
