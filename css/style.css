@@ -319,6 +319,26 @@ tbody tr:hover { background: #f1f5f9; }
 }
 
 /* Footer */
+.cloud-banner {
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  line-height: 1.45;
+}
+
+.cloud-banner-warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.cloud-banner-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
 .footer {
   text-align: center;
   font-size: 0.75rem;

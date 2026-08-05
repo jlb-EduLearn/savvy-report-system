@@ -1,0 +1,8 @@
+{
+  "name": "savvy-report-system",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes serve . -p 3000",
+    "deploy": "powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1"
+  }
+}

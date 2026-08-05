@@ -99,7 +99,7 @@ function handleSortClick(e) {
   refreshDashboard();
 }
 
-function handleTableClick(e) {
+async function handleTableClick(e) {
   const editBtn = e.target.closest('.edit-btn');
   const deleteBtn = e.target.closest('.delete-btn');
 
@@ -120,6 +120,7 @@ function handleTableClick(e) {
 
     currentSchoolData = deleteSchool(currentSchoolData, id);
     refreshDashboard({ resetCheckboxes: true });
+    await pushLocalToCloud(currentSchoolData);
     showToast(`Deleted ${school.name}`, 'success');
   }
 }
@@ -138,7 +139,7 @@ function handleCheckboxChange(e) {
   }
 }
 
-function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
   e.preventDefault();
   const formData = readSchoolFormData();
   const idValue = document.getElementById('school-id').value;
@@ -153,6 +154,11 @@ function handleFormSubmit(e) {
 
   closeSchoolModal();
   refreshDashboard({ resetCheckboxes: true });
+  await pushLocalToCloud(currentSchoolData);
+}
+
+async function handleSyncCloud() {
+  await pushLocalToCloud(currentSchoolData);
 }
 
 function handleCopyReport() {
@@ -200,6 +206,7 @@ function handleImportCSV(e) {
 
       currentSchoolData = importSchoolsFromCSV(currentSchoolData, rows, mode);
       refreshDashboard({ resetCheckboxes: true });
+      pushLocalToCloud(currentSchoolData);
       showToast(`Imported ${rows.length} school(s)`, 'success');
     } catch {
       showToast('Failed to parse CSV file', 'error');
@@ -238,6 +245,7 @@ function initApp() {
   document.getElementById('export-csv-btn').addEventListener('click', handleExportCSV);
   document.getElementById('import-csv-input').addEventListener('change', handleImportCSV);
   document.getElementById('reset-data-btn').addEventListener('click', handleResetData);
+  document.getElementById('sync-cloud-btn').addEventListener('click', handleSyncCloud);
 
   document.getElementById('search-input').addEventListener('input', handleSearchInput);
   document.getElementById('filter-handler').addEventListener('change', handleFilterChange);
