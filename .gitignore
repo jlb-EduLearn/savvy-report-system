@@ -16,7 +16,8 @@ desktop.ini
 *.log
 npm-debug.log*
 
-# Env (if added later)
+# Env / secrets
 .env
 .env.local
 .env.*.local
+js/cloud-config.js
