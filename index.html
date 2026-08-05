@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAVVY Deployment Monitor</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app">
+    <header class="header">
+      <div class="header-brand">
+        <h1>SAVVY Deployment Monitor</h1>
+        <p class="subtitle">School Year 2026–2027</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-text" id="export-csv-btn">Export</button>
+        <label class="btn-text import-label">
+          Import
+          <input type="file" id="import-csv-input" accept=".csv,text/csv" hidden>
+        </label>
+        <button class="btn-text" id="reset-data-btn">Reset</button>
+        <button class="btn-text" id="load-data-btn">Reload</button>
+        <button class="btn-primary" id="add-school-btn">Add School</button>
+      </div>
+    </header>
+
+    <section class="stats" aria-label="Summary">
+      <div class="stat">
+        <span class="stat-label">Total Sites</span>
+        <span class="stat-value" id="metric-total">—</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Teachers Only</span>
+        <span class="stat-value stat-warning" id="metric-teachers">—</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Teachers & Students</span>
+        <span class="stat-value stat-success" id="metric-both">—</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">No Entry</span>
+        <span class="stat-value stat-danger" id="metric-noentry">—</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Enrollment</span>
+        <span class="stat-value" id="metric-enrollment">—</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-toolbar">
+        <input type="search" id="search-input" class="input" placeholder="Search schools..." aria-label="Search schools">
+        <select id="filter-handler" class="select" aria-label="Filter by handler">
+          <option value="">All handlers</option>
+        </select>
+        <select id="filter-status" class="select" aria-label="Filter by status">
+          <option value="">All statuses</option>
+          <option value="Deployed">Deployed</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Undeployed">Undeployed</option>
+        </select>
+      </div>
+      <p class="table-legend">Green dot = complete · Gray dot = not yet done</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-check"><input type="checkbox" id="select-all-checkbox" title="Select all"></th>
+              <th data-sort="ss" class="sortable">Handler</th>
+              <th data-sort="name" class="sortable">Site</th>
+              <th data-sort="link" class="sortable">Link</th>
+              <th data-sort="accountCreation" class="sortable col-flag" title="Account creation">Accounts</th>
+              <th data-sort="teachers" class="sortable col-flag">Teachers</th>
+              <th data-sort="students" class="sortable col-flag">Students</th>
+              <th data-sort="enrollment" class="sortable col-flag">Enrollment</th>
+              <th data-sort="status" class="sortable">Deploy</th>
+              <th class="col-actions"></th>
+            </tr>
+          </thead>
+          <tbody id="school-table-body">
+            <tr><td colspan="10" class="empty-row">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Report</h2>
+        <div class="panel-actions">
+          <button class="btn-text" id="handler-summary-btn">By handler</button>
+          <button class="btn-text" id="download-report-btn">Download</button>
+          <button class="btn-text" id="copy-btn">Copy</button>
+        </div>
+      </div>
+      <p class="report-note">Select schools in the table to generate a partial report.</p>
+      <div id="report-output" class="report-box">Loading report...</div>
+    </section>
+
+    <footer class="footer">
+      <span id="sync-status-label" class="sync-status sync-loading">—</span>
+      <span class="footer-sep">·</span>
+      <span id="last-saved-label">—</span>
+    </footer>
+  </div>
+
+  <div id="school-modal" class="modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <h2 id="modal-title">Add School</h2>
+      <form id="school-form">
+        <input type="hidden" id="school-id">
+        <div class="form-row">
+          <div class="field">
+            <label for="school-ss">Handler</label>
+            <input type="text" id="school-ss" class="input" required>
+          </div>
+          <div class="field">
+            <label for="school-status">Status</label>
+            <select id="school-status" class="select" required>
+              <option value="Deployed">Deployed</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Undeployed">Undeployed</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="school-name">Site name</label>
+          <input type="text" id="school-name" class="input" required>
+        </div>
+        <div class="field">
+          <label for="school-link">Site link</label>
+          <input type="text" id="school-link" class="input" placeholder="school.edulearntechnologies.com">
+        </div>
+        <div class="field">
+          <label for="school-programs">Programs <span class="field-hint">(optional, if multiple schools share one site)</span></label>
+          <input type="text" id="school-programs" class="input" placeholder="Elementary, High School">
+        </div>
+        <fieldset class="checkbox-group">
+          <legend>Progress</legend>
+          <label><input type="checkbox" id="school-account-creation"> Account creation</label>
+          <label><input type="checkbox" id="school-teachers"> Teachers uploaded</label>
+          <label><input type="checkbox" id="school-students"> Students uploaded</label>
+          <label><input type="checkbox" id="school-enrollment"> Enrollment module</label>
+        </fieldset>
+        <div class="modal-footer">
+          <button type="button" class="btn-text" id="cancel-btn">Cancel</button>
+          <button type="submit" class="btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/cloud-config.js"></script>
+  <script src="js/seed-data.js"></script>
+  <script src="js/sites.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/cloud.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/report.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

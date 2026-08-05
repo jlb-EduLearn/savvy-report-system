@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "name": "savvy-report-system",
+  "buildCommand": "node scripts/generate-config.js",
+  "outputDirectory": ".",
+  "cleanUrls": true,
+  "trailingSlash": false
+}
